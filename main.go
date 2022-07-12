@@ -3,12 +3,12 @@ package main
 import (
     "fmt"
     "log"
-	
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
     "github.com/ethereum/go-ethereum/ethclient"
 	
-	"./contracts/router"
+	"github.com/DhunterAO/go-uni/contracts/router"
 )
 
 func main() {
@@ -19,13 +19,21 @@ func main() {
 
     fmt.Println("we have a connection")
 
-	const uniV3RouterAddr = common.HexToAddress("0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45")
+	uniV3RouterAddr := common.HexToAddress("0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45")
 
-	instance, err := router.NewRouter(uniV3RouterAddr, client)
+	instance, err := router.NewRouterCaller(uniV3RouterAddr, client)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fatory, err := instance.Factory(&bind.CallOpts{}, uniV3RouterAddr)
-	fmt.Printf("wei: %s\n", bal)
+	fatory, err := instance.Factory(&bind.CallOpts{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("fatory: %s\n", fatory)
+	
+	params := router.IV3SwapRouterExactInputSingleParams{
+
+	}
+	amountOut, err := instance.ExactInputSingle()
 }
