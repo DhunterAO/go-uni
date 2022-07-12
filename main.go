@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 	"math/big"
 
 	"github.com/DhunterAO/go-uni/contracts/router"
-	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -15,16 +15,15 @@ import (
 )
 
 func main() {
-	client, err := ethclient.Dial("wss://rpc-mainnet.matic.network")
+	client, err := ethclient.Dial("ws://127.0.0.1:8546")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println("we have a connection")
-	query := ethereum.FilterQuery{}
-	logs := make(chan types.Log)
+	headers := make(chan *types.Header)
 
-	sub, err := client.SubscribeFilterLogs(context.Background(), query, logs)
+	sub, err := client.SubscribeNewHead(context.Background(), headers)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,8 +39,18 @@ func main() {
 		TokenOut:          weth,
 		Fee:               big.NewInt(500),
 		Recipient:         account,
-		AmountIn:          big.NewInt(100000),
+		AmountIn:          big.NewInt(100000000),
 		AmountOutMinimum:  big.NewInt(0),
+		SqrtPriceLimitX96: big.NewInt(0),
+	}
+
+	exactOutputParams := router.IV3SwapRouterExactOutputSingleParams{
+		TokenIn:           weth,
+		TokenOut:          usdc,
+		Fee:               big.NewInt(500),
+		Recipient:         account,
+		AmountOut:         big.NewInt(100000000),
+		AmountInMaximum:   big.NewInt(1000000000000000000),
 		SqrtPriceLimitX96: big.NewInt(0),
 	}
 
@@ -49,9 +58,8 @@ func main() {
 		select {
 		case err := <-sub.Err():
 			log.Fatal(err)
-		case vLog := <-logs:
-			fmt.Println(vLog) // pointer to event log
-
+		case header := <-headers:
+			fmt.Println(header.Number) // pointer to event log
 			instance, err := router.NewRouterCaller(uniV3RouterAddr, client)
 			if err != nil {
 				log.Fatal(err)
@@ -62,6 +70,13 @@ func main() {
 				log.Fatal("error:", err)
 			}
 			fmt.Printf("amountOut: %s\n", amountOut)
+
+			amountIn, err := instance.ExactOutputSingle(&bind.CallOpts{From: account}, exactOutputParams)
+			if err != nil {
+				log.Fatal("error:", err)
+			}
+			fmt.Printf("amountIn: %s\n", amountIn)
+			fmt.Println(time.Now())
 		}
 	}
 }

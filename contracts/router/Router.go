@@ -601,47 +601,59 @@ func (_Router *RouterCaller) ExactInputSingle(opts *bind.CallOpts, params IV3Swa
 // 	return _Router.Contract.ExactInputSingle(&_Router.TransactOpts, params)
 // }
 
-// ExactOutput is a paid mutator transaction binding the contract method 0x09b81346.
-//
-// Solidity: function exactOutput((bytes,address,uint256,uint256) params) payable returns(uint256 amountIn)
-func (_Router *RouterTransactor) ExactOutput(opts *bind.TransactOpts, params IV3SwapRouterExactOutputParams) (*types.Transaction, error) {
-	return _Router.contract.Transact(opts, "exactOutput", params)
+func (_Router *RouterCaller) ExactOutputSingle(opts *bind.CallOpts, params IV3SwapRouterExactOutputSingleParams) (*big.Int, error) {
+	var out []interface{}
+	err := _Router.contract.Call(opts, &out, "exactOutputSingle", params)
+
+	if err != nil {
+		return big.NewInt(0), err
+	}
+
+	out0 := abi.ConvertType(out[0], new(big.Int)).(*big.Int)
+	return out0, err
 }
 
 // ExactOutput is a paid mutator transaction binding the contract method 0x09b81346.
 //
 // Solidity: function exactOutput((bytes,address,uint256,uint256) params) payable returns(uint256 amountIn)
-func (_Router *RouterSession) ExactOutput(params IV3SwapRouterExactOutputParams) (*types.Transaction, error) {
-	return _Router.Contract.ExactOutput(&_Router.TransactOpts, params)
-}
+// func (_Router *RouterTransactor) ExactOutput(opts *bind.TransactOpts, params IV3SwapRouterExactOutputParams) (*types.Transaction, error) {
+// 	return _Router.contract.Transact(opts, "exactOutput", params)
+// }
 
 // ExactOutput is a paid mutator transaction binding the contract method 0x09b81346.
 //
 // Solidity: function exactOutput((bytes,address,uint256,uint256) params) payable returns(uint256 amountIn)
-func (_Router *RouterTransactorSession) ExactOutput(params IV3SwapRouterExactOutputParams) (*types.Transaction, error) {
-	return _Router.Contract.ExactOutput(&_Router.TransactOpts, params)
-}
+// func (_Router *RouterSession) ExactOutput(params IV3SwapRouterExactOutputParams) (*types.Transaction, error) {
+// 	return _Router.Contract.ExactOutput(&_Router.TransactOpts, params)
+// }
+
+// ExactOutput is a paid mutator transaction binding the contract method 0x09b81346.
+//
+// Solidity: function exactOutput((bytes,address,uint256,uint256) params) payable returns(uint256 amountIn)
+// func (_Router *RouterTransactorSession) ExactOutput(params IV3SwapRouterExactOutputParams) (*types.Transaction, error) {
+// 	return _Router.Contract.ExactOutput(&_Router.TransactOpts, params)
+// }
 
 // ExactOutputSingle is a paid mutator transaction binding the contract method 0x5023b4df.
 //
 // Solidity: function exactOutputSingle((address,address,uint24,address,uint256,uint256,uint160) params) payable returns(uint256 amountIn)
-func (_Router *RouterTransactor) ExactOutputSingle(opts *bind.TransactOpts, params IV3SwapRouterExactOutputSingleParams) (*types.Transaction, error) {
-	return _Router.contract.Transact(opts, "exactOutputSingle", params)
-}
+// func (_Router *RouterTransactor) ExactOutputSingle(opts *bind.TransactOpts, params IV3SwapRouterExactOutputSingleParams) (*types.Transaction, error) {
+// 	return _Router.contract.Transact(opts, "exactOutputSingle", params)
+// }
+
+// // ExactOutputSingle is a paid mutator transaction binding the contract method 0x5023b4df.
+// //
+// // Solidity: function exactOutputSingle((address,address,uint24,address,uint256,uint256,uint160) params) payable returns(uint256 amountIn)
+// func (_Router *RouterSession) ExactOutputSingle(params IV3SwapRouterExactOutputSingleParams) (*types.Transaction, error) {
+// 	return _Router.Contract.ExactOutputSingle(&_Router.TransactOpts, params)
+// }
 
 // ExactOutputSingle is a paid mutator transaction binding the contract method 0x5023b4df.
 //
 // Solidity: function exactOutputSingle((address,address,uint24,address,uint256,uint256,uint160) params) payable returns(uint256 amountIn)
-func (_Router *RouterSession) ExactOutputSingle(params IV3SwapRouterExactOutputSingleParams) (*types.Transaction, error) {
-	return _Router.Contract.ExactOutputSingle(&_Router.TransactOpts, params)
-}
-
-// ExactOutputSingle is a paid mutator transaction binding the contract method 0x5023b4df.
-//
-// Solidity: function exactOutputSingle((address,address,uint24,address,uint256,uint256,uint160) params) payable returns(uint256 amountIn)
-func (_Router *RouterTransactorSession) ExactOutputSingle(params IV3SwapRouterExactOutputSingleParams) (*types.Transaction, error) {
-	return _Router.Contract.ExactOutputSingle(&_Router.TransactOpts, params)
-}
+// func (_Router *RouterTransactorSession) ExactOutputSingle(params IV3SwapRouterExactOutputSingleParams) (*types.Transaction, error) {
+// 	return _Router.Contract.ExactOutputSingle(&_Router.TransactOpts, params)
+// }
 
 // GetApprovalType is a paid mutator transaction binding the contract method 0xdee00f35.
 //
