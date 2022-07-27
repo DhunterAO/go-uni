@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 	"math/big"
+	"time"
 
-	"github.com/DhunterAO/go-uni/contracts/router"
+	"github.com/DhunterAO/go-uni/contracts/curve/vyper"
+	"github.com/DhunterAO/go-uni/contracts/univ3/router"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -28,7 +29,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	amount := int64(1000000000)
+
 	uniV3RouterAddr := common.HexToAddress("0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45")
+	curveVyperAddr := common.HexToAddress("0x1d8b86e3d88cdb2d34688e87e72f388cb541b7c8")
 
 	account := common.HexToAddress("0xF5c12b5b6aB5aFbD87a5BE34f1f7a6473b7eAb0F")
 
@@ -39,7 +43,7 @@ func main() {
 		TokenOut:          weth,
 		Fee:               big.NewInt(500),
 		Recipient:         account,
-		AmountIn:          big.NewInt(100000000),
+		AmountIn:          big.NewInt(amount),
 		AmountOutMinimum:  big.NewInt(0),
 		SqrtPriceLimitX96: big.NewInt(0),
 	}
@@ -49,9 +53,19 @@ func main() {
 		TokenOut:          usdc,
 		Fee:               big.NewInt(500),
 		Recipient:         account,
-		AmountOut:         big.NewInt(100000000),
+		AmountOut:         big.NewInt(amount),
 		AmountInMaximum:   big.NewInt(1000000000000000000),
 		SqrtPriceLimitX96: big.NewInt(0),
+	}
+
+	routerInstance, err := router.NewRouterCaller(uniV3RouterAddr, client)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	vyperInstance, err := vyper.NewVyperCaller(curveVyperAddr, client)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	for {
@@ -59,24 +73,31 @@ func main() {
 		case err := <-sub.Err():
 			log.Fatal(err)
 		case header := <-headers:
-			fmt.Println(header.Number) // pointer to event log
-			instance, err := router.NewRouterCaller(uniV3RouterAddr, client)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			amountOut, err := instance.ExactInputSingle(&bind.CallOpts{From: account}, exactInputParams)
+			fmt.Println(header.Number, time.Now()) // pointer to event log
+			amountOut, err := routerInstance.ExactInputSingle(&bind.CallOpts{From: account}, exactInputParams)
 			if err != nil {
 				log.Fatal("error:", err)
 			}
-			fmt.Printf("amountOut: %s\n", amountOut)
+			fmt.Printf("univ3 amountOut: %s\n", amountOut)
 
-			amountIn, err := instance.ExactOutputSingle(&bind.CallOpts{From: account}, exactOutputParams)
+			amountIn, err := routerInstance.ExactOutputSingle(&bind.CallOpts{From: account}, exactOutputParams)
 			if err != nil {
 				log.Fatal("error:", err)
 			}
-			fmt.Printf("amountIn: %s\n", amountIn)
+			fmt.Printf("univ3 amountIn: %s\n", amountIn)
 			fmt.Println(time.Now())
+
+			amountOut, err = vyperInstance.GetDyUnderlying(&bind.CallOpts{From: account}, big.NewInt(1), big.NewInt(4), big.NewInt(amount))
+			if err != nil {
+				log.Fatal("error:", err)
+			}
+			fmt.Printf("curve amountOut: %s\n", amountOut)
+
+			// amountIn, err = vyperInstance.GetDyUnderlying(&bind.CallOpts{From: account}, big.NewInt(4), big.NewInt(1), big.NewInt(amount))
+			// if err != nil {
+			// 	log.Fatal("error:", err)
+			// }
+			// fmt.Printf("curve amountIn: %s\n", amountIn)
 		}
 	}
 }
